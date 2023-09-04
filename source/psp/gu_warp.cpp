@@ -65,6 +65,8 @@ void 	VID_SetPaletteToSky();
 void 	VID_SetGlobalPalette();
 // switch palette for textures
 
+int GU_LoadTextureAsRGBA(const char *identifier, int width, int height, const byte *data, qboolean stretch, int filter);
+
 float	speedscale;		// for top sky and bottom sky
 
 static msurface_t	*warpface;
@@ -971,9 +973,9 @@ void Sky_LoadSkyBox (char *name)
 			if (f) // Load up 512 x 512 sky textures if on slim psp.
 			{
 				if (!strncmp(size,"_512_",5))
-					skyimage[i] = GL_LoadTexture ("", 512, 512, f+8, qfalse, GU_LINEAR, 0);
+					skyimage[i] = GU_LoadTextureAsRGBA("", 512, 512, f+8, qfalse, GU_LINEAR);
 				else // If no 512 x 512 textures are available, use 256 x 256.
-					skyimage[i] = GL_LoadTexture ("", 256, 256, f+8, qfalse, GU_LINEAR, 0);
+					skyimage[i] = GU_LoadTextureAsRGBA("", 256, 256, f+8, qfalse, GU_LINEAR);
 
 				nonefound = false;
 			}
@@ -985,7 +987,7 @@ void Sky_LoadSkyBox (char *name)
 
 				if (f) // Last try
 				{
-					skyimage[i] = GL_LoadTexture ("", 256, 256, f+8, qfalse, GU_LINEAR, 0);
+					skyimage[i] = GU_LoadTextureAsRGBA("", 256, 256, f+8, qfalse, GU_LINEAR);
 					nonefound = false;
 				}
 				else
@@ -997,7 +999,7 @@ void Sky_LoadSkyBox (char *name)
 		} else {
 			if (f) // Load up 256 x 256 sky textures if on phat psp.
 			{
-				skyimage[i] = GL_LoadTexture ("", 256, 256, f+8, qfalse, GU_LINEAR, 0);
+				skyimage[i] = GU_LoadTextureAsRGBA("", 256, 256, f+8, qfalse, GU_LINEAR);
 				nonefound = false;
 			}
 			else
@@ -1456,8 +1458,8 @@ void R_DrawSkyBox (void)
 
  //               sceKernelDcacheWritebackRange(display_list_vertices,buffer_size);
 
-                if(cl.worldmodel)
-                    VID_SetPaletteToSky ();
+                //if(cl.worldmodel)
+                //    VID_SetPaletteToSky ();
 
                 Fog_DisableGFog();
 
@@ -1507,8 +1509,8 @@ void R_DrawSkyBox (void)
         else
         {
 
-            if(cl.worldmodel)
-                VID_SetPaletteToSky ();
+            //if(cl.worldmodel)
+            //    VID_SetPaletteToSky ();
 
             Fog_DisableGFog();
 
@@ -1652,7 +1654,7 @@ void R_InitSky (byte *mt)
 	}
 
 	if (solidskytexture == -1)
-		solidskytexture = GL_LoadTexture("", 128, 128, trans, qfalse, GU_LINEAR, 0);
+		solidskytexture = GU_LoadTextureAsRGBA("", 128, 128, trans, qfalse, GU_LINEAR);
 
 	for (int i=0 ; i<128 ; i++)
 	{
@@ -1667,5 +1669,5 @@ void R_InitSky (byte *mt)
 	}
 
 	if (alphaskytexture == -1)
-		alphaskytexture = GL_LoadTexture("", 128, 128, trans, qfalse, GU_LINEAR, 0);
+		alphaskytexture = GU_LoadTextureAsRGBA("", 128, 128, trans, qfalse, GU_LINEAR);
 }

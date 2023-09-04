@@ -35,6 +35,7 @@ extern "C"
 }
 
 #include "vram.hpp"
+#include "gu_dxtn.h"
 
 byte		*draw_chars;				// 8*8 graphic characters
 qpic_t		*draw_disc;
@@ -61,6 +62,8 @@ typedef struct
 	int		width;
 	int		height;
 	int 	mipmaps;
+	int     bpp;
+	int 	swizzle;
 
 	ScePspRGBA8888*	palette;
 
@@ -80,6 +83,8 @@ gltexture_t	gltextures[MAX_GLTEXTURES];
 bool 		gltextures_used[MAX_GLTEXTURES];
 int			numgltextures;
 
+int GU_LoadTextureAsRGBA(const char *identifier, int width, int height, const byte *data, qboolean stretch, qboolean as_dxt3, int filter);
+
 void GL_InitTextureUsage () {
 	for (int i=0; i<MAX_GLTEXTURES; i++) {
 		gltextures_used[i] = false;
@@ -87,20 +92,11 @@ void GL_InitTextureUsage () {
 	numgltextures = 0;
 }
 
+extern qboolean palette_needs_update;
 void GL_Bind (int texture_index)
 {
-
-	// Which texture is it?
-	const gltexture_t& texture = gltextures[texture_index];
-
-	if (texture.palette)
-		VID_SetPaletteToTexture (texture.palette);
-	else
-		VID_SetGlobalPalette ();
-
 	// Binding the currently bound texture?
-	if (currenttexture == texture_index)
-	{
+	if (currenttexture == texture_index) {
 		// Don't bother.
 		return;
 	}
@@ -108,38 +104,18 @@ void GL_Bind (int texture_index)
 	// Remember the current texture.
 	currenttexture = texture_index;
 
-	// Set the texture mode.
-	if (texture.palette)
-		sceGuTexMode(GU_PSM_T8, texture.mipmaps , 0, GU_TRUE);
-	else
-		sceGuTexMode(texture.format, texture.mipmaps , 0, GU_TRUE);
+	// Which texture is it?
+	const gltexture_t& texture = gltextures[texture_index];
 
-	if (texture.mipmaps > 0 && r_mipmaps.value > 0)
-    {
-		float slope = 0.4f;
-		sceGuTexSlope(slope); // the near from 0 slope is the lower (=best detailed) mipmap it uses
-        sceGuTexFilter(GU_LINEAR_MIPMAP_LINEAR, GU_LINEAR_MIPMAP_LINEAR);
-		sceGuTexLevelMode(int(r_mipmaps_func.value), r_mipmaps_bias.value);
-	}
-	else
-		sceGuTexFilter(texture.filter, texture.filter);
+	if (palette_needs_update == qtrue)
+		VID_SetGlobalPalette();
+
+	sceGuTexMode(texture.format, texture.mipmaps , 0, texture.swizzle);
+	sceGuTexFilter(texture.filter, texture.filter);
 
 	// Set the texture image.
 	const void* const texture_memory = texture.vram ? texture.vram : texture.ram;
 	sceGuTexImage(0, texture.width, texture.height, texture.width, texture_memory);
-
-	if (texture.mipmaps > 0 && r_mipmaps.value > 0) {
-		int size = (texture.width * texture.height);
-		int offset = size;
-		int div = 2;
-
-		for (int i = 1; i <= texture.mipmaps; i++) {
-			void* const texture_memory2 = ((byte*) texture_memory)+offset;
-			sceGuTexImage(i, texture.width/div, texture.height/div, texture.width/div, texture_memory2);
-			offset += size/(div*div);
-			div *=2;
-		}
-	}
 }
 
 
@@ -179,7 +155,7 @@ byte		menuplyr_pixels[4096];
 
 static int GL_LoadPicTexture (qpic_t *pic)
 {
-	return GL_LoadTexture ("", pic->width, pic->height, pic->data, qfalse, GU_NEAREST, 0);
+	return GU_LoadTextureAsRGBA("", pic->width, pic->height, pic->data, qfalse, GU_NEAREST);
 }
 
 qpic_t *Draw_PicFromWad (char *name)
@@ -288,7 +264,7 @@ void Draw_Init (void)
 			draw_chars[i] = 255;	// proper transparent color
 
 	// now turn them into textures
-	char_texture = GL_LoadTexture ("charset", 128, 128, draw_chars, qfalse, GU_NEAREST, 0);
+	char_texture = GU_LoadTextureAsRGBA("charset", 128, 128, draw_chars, qfalse, GU_NEAREST);
 
 	start = Hunk_LowMark();
 
@@ -312,11 +288,10 @@ void Draw_Init (void)
 	ncdata = cb->data;
 
 	gl = (glpic_t *)conback->data;
-	if (COM_CheckParm("-nearest")){
-	gl->index = GL_LoadTexture ("conback", conback->width, conback->height, ncdata, qfalse, GU_NEAREST, 0);
-	}
-	else{
-	gl->index = GL_LoadTexture ("conback", conback->width, conback->height, ncdata, qfalse, GU_LINEAR, 0);
+	if (COM_CheckParm("-nearest")) {
+		gl->index = GU_LoadTextureAsRGBA("conback", conback->width, conback->height, ncdata, qfalse, GU_NEAREST);
+	} else {
+		gl->index = GU_LoadTextureAsRGBA("conback", conback->width, conback->height, ncdata, qfalse, GU_NEAREST);
 	}
 	conback->width = vid.width;
 	conback->height = vid.height;
@@ -1185,6 +1160,7 @@ void GL_UnloadTexture(int texture_index) {
 		texture.width = 0;
 		texture.height = 0;
 		texture.mipmaps = 0;
+		texture.bpp = 0;
 		// Buffers.
 		if (texture.ram != NULL)
 		{
@@ -1200,6 +1176,196 @@ void GL_UnloadTexture(int texture_index) {
 
 	gltextures_used[texture_index] = false;
 	numgltextures--;
+}
+
+/*
+================
+GU_UploadDXT
+================
+*/
+void Image_Resample (void *indata, int inwidth, int inheight,void *outdata, int outwidth, int outheight, int bpp, int quality);
+void GU_UploadDXT(int texture_index, const byte *data, int width, int height)
+{
+	if ((texture_index < 0) || (texture_index >= MAX_GLTEXTURES) || gltextures_used[texture_index] == false) {
+		Sys_Error("Invalid texture index %d", texture_index);
+	}
+	
+	const gltexture_t& texture = gltextures[texture_index];
+
+	// Check that the texture matches.
+	if ((width != texture.original_width) != (height != texture.original_height)) {
+		Sys_Error("Attempting to upload a texture which doesn't match the destination");
+	}
+	
+	// Create a temporary buffer to use as a source for swizzling.
+	std::size_t buffer_sizesrc = texture.width*texture.height*texture.bpp;
+	int start = Hunk_LowMark ();
+	byte* unswizzled = static_cast<byte*>(Hunk_Alloc(buffer_sizesrc));
+
+    // New compressed texture
+	std::size_t buffer_sizedst = texture.width*texture.height/2;
+
+	if (texture.stretch_to_power_of_two) {
+		// Resize.
+		Image_Resample ((void*)data, width, height, &unswizzled[0], texture.width, texture.height, texture.bpp, 0);
+  	} else {
+		// Straight copy.
+		for (int y = 0; y < height; ++y)
+		{
+			const byte* const	src	= data + (y * width * texture.bpp);
+			byte* const			dst = &unswizzled[y * texture.width * texture.bpp];
+			memcpy(dst, src, width * texture.bpp);
+		}
+	}
+
+	if (texture.vram) {
+		tx_compress_dxtn(texture.bpp, texture.width, texture.height,(const unsigned char *)&unswizzled[0], texture.format, (unsigned char *)texture.vram);
+	} else {
+		tx_compress_dxtn(texture.bpp, texture.width, texture.height,(const unsigned char *)&unswizzled[0], texture.format, (unsigned char *)texture.ram);
+	}
+
+	Hunk_FreeToLowMark (start);
+
+	// Copy to VRAM?
+	if (texture.vram)
+	{
+		// Flush the data cache.
+		sceKernelDcacheWritebackRange(texture.vram, buffer_sizedst);
+	} else {
+		// Flush the data cache.
+		sceKernelDcacheWritebackRange(texture.ram, buffer_sizedst);
+	}
+}
+
+/*
+================
+GU_LoadImages
+================
+*/
+
+int GU_LoadImages (const char *identifier, int width, int height, const byte *data, qboolean stretch_to_power_of_two, int filter, int mipmap_level, int bpp)
+{
+	int texture_index = -1;
+
+	tex_scale_down = r_tex_scale_down.value == qtrue;
+	
+	// See if the texture is already present.
+	if (identifier[0])
+	{
+		for (int i = 0; i < MAX_GLTEXTURES; ++i)
+		{
+			if (gltextures_used[i] == true)
+			{
+				const gltexture_t& texture = gltextures[i];
+				if (!strcmp (identifier, texture.identifier))
+				{
+					return i;
+				}
+			}
+		}
+	}
+	
+	// Out of textures?
+	if (numgltextures == MAX_GLTEXTURES)
+		Sys_Error("Out of OpenGL textures");
+
+	// Use the next available texture.
+	numgltextures++;
+	texture_index = numgltextures;
+
+	for (int i = 0; i < MAX_GLTEXTURES; ++i)
+	{
+		if (gltextures_used[i] == false)
+		{
+			texture_index = i;
+			break;
+		}
+	}
+	
+	gltexture_t& texture = gltextures[texture_index];
+	gltextures_used[texture_index] = true;
+
+	// Fill in the source data.
+	strcpy(texture.identifier, identifier);
+	texture.original_width			= width;
+	texture.original_height			= height;
+	texture.stretch_to_power_of_two	= stretch_to_power_of_two != qfalse;
+	texture.bpp                     = bpp;
+	texture.filter 					= filter;
+	texture.mipmaps 				= 0; 		// sacrifice some beauty for vram.
+	texture.swizzle 				= GU_FALSE;
+	texture.format					= GU_PSM_DXT1;
+
+	if (tex_scale_down == true && texture.stretch_to_power_of_two == true) {
+		texture.width			= std::max(round_down(width), 32U);
+		texture.height			= std::max(round_down(height),32U);
+	} else {
+		texture.width			= std::max(round_up(width), 32U);
+		texture.height			= std::max(round_up(height),32U);
+	}
+
+	if (texture.width > 800) texture.width = 800;
+	if (texture.height > 800) texture.height = 800;
+
+	// Do we really need to resize the texture?
+	if (texture.stretch_to_power_of_two) {
+		// Not if the size hasn't changed.
+		texture.stretch_to_power_of_two = (texture.width != width) || (texture.height != height);
+	}
+
+	// Allocate the RAM.
+	std::size_t buffer_size = texture.width * texture.height/2;
+
+	Con_DPrintf("Loading: %s [%dx%d](%0.2f KB)\n",texture.identifier, texture.width, texture.height, (float)buffer_size/1024);
+
+	texture.ram	= static_cast<texel*>(memalign(16, buffer_size));
+
+	if (!texture.ram)
+	{
+		Sys_Error("Out of RAM for images.");
+	}
+
+	// Allocate the VRAM.
+	texture.vram = static_cast<texel*>(quake::vram::allocate(buffer_size));
+
+	// Upload the texture.
+	GU_UploadDXT(texture_index, data, width, height);
+
+	if (texture.vram && texture.ram)
+	{
+		free(texture.ram);
+		texture.ram = NULL;
+	}
+
+	// Done.
+	return texture_index;
+}
+
+int GU_LoadTextureAsRGBA(const char *identifier, int width, int height, const byte *data, qboolean stretch, int filter)
+{
+	int pixel_count = width * height;
+	byte* rgba_data = (byte*)Q_malloc(pixel_count * 4);
+
+	for(int i = 0; i < pixel_count; i++) {
+		// Retrieve the pallete index for this pixel
+		byte palette_index = data[i];
+
+		// Palette index 255 is reserved for translucency
+		if (palette_index == 255) {
+			rgba_data[i * 4] = rgba_data[i * 4 + 1] = rgba_data[i * 4 + 2] = rgba_data[i * 4 + 3] = 0;
+		}
+		else {
+			rgba_data[i * 4]     = host_basepal[palette_index * 3 + 0];
+			rgba_data[i * 4 + 1] = host_basepal[palette_index * 3 + 1];
+			rgba_data[i * 4 + 2] = host_basepal[palette_index * 3 + 2];
+			rgba_data[i * 4 + 3] = 255; // Set alpha to opaque
+		}
+	}
+
+	int ret = GU_LoadImages(identifier, width, height, rgba_data, stretch, filter, 0, 4);
+	free(rgba_data);
+
+	return ret;
 }
 
 int GL_LoadTexture (const char *identifier, int width, int height, const byte *data, qboolean stretch_to_power_of_two, int filter, int mipmap_level)
@@ -1253,6 +1419,7 @@ int GL_LoadTexture (const char *identifier, int width, int height, const byte *d
     texture.format 			= GU_PSM_T8;
 	texture.filter			= filter;
 	texture.mipmaps			= mipmap_level;
+	texture.swizzle 		= GU_TRUE;
 
 	if (width > 800) tex_scale_down = true;
 	if (height > 800) tex_scale_down = true;

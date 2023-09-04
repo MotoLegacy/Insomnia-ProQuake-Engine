@@ -100,11 +100,13 @@ void VID_InitLightmapPalette() {
 	}
 }
 
+qboolean palette_needs_update;
 void VID_SetPaletteToSky() {
 	// Upload the palette.
 	sceGuClutMode(GU_PSM_8888, 0, palette_size - 1, 0);
 	sceKernelDcacheWritebackRange(d_8to24tableSKY, sizeof(d_8to24tableSKY));
 	sceGuClutLoad(palette_size / 8, d_8to24tableSKY);
+	palette_needs_update = qtrue;
 }
 
 void VID_SetLightmapPalette() {
@@ -112,6 +114,7 @@ void VID_SetLightmapPalette() {
 	sceGuClutMode(GU_PSM_8888, 0, palette_size - 1, 0);
 	sceKernelDcacheWritebackRange(d_8to24tableLM, sizeof(d_8to24tableLM));
 	sceGuClutLoad(palette_size / 8, d_8to24tableLM);
+	palette_needs_update = qtrue;
 }
 
 void VID_SetGlobalPalette() {
@@ -119,6 +122,7 @@ void VID_SetGlobalPalette() {
 	sceGuClutMode(GU_PSM_8888, 0, palette_size - 1, 0);
 	sceKernelDcacheWritebackRange(d_8to24table, sizeof(d_8to24table));
 	sceGuClutLoad(palette_size / 8, d_8to24table);
+	palette_needs_update = qfalse;
 }
 
 void VID_SetPaletteOld(unsigned char* palette)

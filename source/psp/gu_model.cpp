@@ -57,6 +57,9 @@ cvar_t gl_subdivide_size = {"gl_subdivide_size", "256", qtrue};
 
 extern int solidskytexture;
 extern int alphaskytexture;
+
+int GU_LoadTextureAsRGBA(const char *identifier, int width, int height, const byte *data, qboolean stretch, int filter);
+
 /*
 extern int sky_rt;
 extern int sky_bk;
@@ -532,12 +535,12 @@ void Mod_LoadTextures (lump_t *l)
 		if (COM_CheckParm("-nearest"))
 		{
 			//texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
-			tx->gl_texturenum = GL_LoadTexture (mt->name, tx->width, tx->height, tex_data, qtrue, GU_NEAREST, level);
+			tx->gl_texturenum = GU_LoadTextureAsRGBA(mt->name, tx->width, tx->height, tex_data, qtrue, GU_NEAREST);
 			mapTextureNameList.push_back(tx->gl_texturenum);
 		}
 		else {
 			//texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
-			tx->gl_texturenum = GL_LoadTexture (mt->name, tx->width, tx->height, tex_data, qtrue, GU_LINEAR, level);
+			tx->gl_texturenum = GU_LoadTextureAsRGBA(mt->name, tx->width, tx->height, tex_data, qtrue, GU_LINEAR);
 			mapTextureNameList.push_back(tx->gl_texturenum);
 		}
 		free (tx_pixels);
@@ -1863,10 +1866,10 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 				skin_data = (byte *)(pskintype + 1);
 			}
 
-			int gl_ident = GL_LoadTexture (name, pheader->skinwidth, pheader->skinheight, skin_data, qtrue, texturemode, 0);
+			int gu_ident = GU_LoadTextureAsRGBA(name, pheader->skinwidth, pheader->skinheight, skin_data, qtrue, texturemode);
 			pheader->gl_texturenum[i][0] = pheader->gl_texturenum[i][1] =
 			pheader->gl_texturenum[i][2] = pheader->gl_texturenum[i][3] =
-				gl_ident;
+				gu_ident;
 			pskintype = (daliasskintype_t *)((byte *)(pskintype+1) + size);
 		}
 		else 
@@ -1885,7 +1888,7 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 					Mod_FloodFillSkin( skin, pheader->skinwidth, pheader->skinheight );
 					snprintf(name, sizeof(name),  "%s_%i_%i", loadmodel->name, i,j);
 					pheader->gl_texturenum[i][j&3] =
-						GL_LoadTexture (name, pheader->skinwidth, pheader->skinheight, (byte *)(pskintype), qtrue, GU_NEAREST, 0);
+						GU_LoadTextureAsRGBA(name, pheader->skinwidth, pheader->skinheight, (byte *)(pskintype), qtrue, GU_NEAREST);
 					pskintype = (daliasskintype_t *)((byte *)(pskintype) + size);
 				}
 				else{
@@ -1893,7 +1896,7 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 					Mod_FloodFillSkin( skin, pheader->skinwidth, pheader->skinheight );
 					snprintf(name, sizeof(name),  "%s_%i_%i", loadmodel->name, i,j);
 					pheader->gl_texturenum[i][j&3] =
-						GL_LoadTexture (name, pheader->skinwidth, pheader->skinheight, (byte *)(pskintype), qtrue, GU_LINEAR, 0);
+						GU_LoadTextureAsRGBA(name, pheader->skinwidth, pheader->skinheight, (byte *)(pskintype), qtrue, GU_LINEAR);
 					pskintype = (daliasskintype_t *)((byte *)(pskintype) + size);
 				}
 			}
@@ -2095,11 +2098,10 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
 
 	snprintf(name, sizeof(name),  "%s_%i", loadmodel->name, framenum);
 
-	if (COM_CheckParm("-nearest")){
-	pspriteframe->gl_texturenum = GL_LoadTexture (name, width, height, (byte *)(pinframe + 1), qtrue, GU_NEAREST, 0);
-	}
-	else{
-		pspriteframe->gl_texturenum = GL_LoadTexture (name, width, height, (byte *)(pinframe + 1), qtrue, GU_LINEAR, 0);
+	if (COM_CheckParm("-nearest")) {
+		pspriteframe->gl_texturenum = GU_LoadTextureAsRGBA(name, width, height, (byte *)(pinframe + 1), qtrue, GU_NEAREST);
+	} else {
+		pspriteframe->gl_texturenum = GU_LoadTextureAsRGBA(name, width, height, (byte *)(pinframe + 1), qtrue, GU_LINEAR);
 	}
 
 	return (void *)((byte *)pinframe + sizeof (dspriteframe_t) + size);

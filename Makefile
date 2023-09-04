@@ -100,6 +100,8 @@ COMMON_OBJS = \
 HARDWARE_VIDEO_ONLY_OBJS = \
 	$(OBJ_DIR)/psp/clipping.o \
 	$(OBJ_DIR)/psp/gu_psp.o \
+	$(OBJ_DIR)/psp/gu_resample.o \
+	$(OBJ_DIR)/psp/gu_dxtn.o \
 	$(OBJ_DIR)/psp/gu_draw.o \
 	$(OBJ_DIR)/psp/gu_entity_fragment.o \
 	$(OBJ_DIR)/psp/gu_fog.o \
