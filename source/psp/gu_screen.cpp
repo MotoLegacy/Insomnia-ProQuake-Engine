@@ -25,6 +25,7 @@ extern "C"
 {
 #include "../quakedef.h"
 }
+#include <pspsdk.h>
 
 /*
 
@@ -413,23 +414,6 @@ void SCR_Init (void)
 	scr_initialized = qtrue;
 }
 
-
-/*
-==============
-SCR_DrawRam
-==============
-*/
-void SCR_DrawRam (void)
-{
-	if (!scr_showram.value)
-		return;
-
-	if (!r_cache_thrash)
-		return;
-
-	Draw_Pic (scr_vrect.x+32, scr_vrect.y, scr_ram);
-}
-
 /*
 ==============
 SCR_DrawTurtle
@@ -469,6 +453,21 @@ void SCR_DrawNet (void)
 		return;
 
 	Draw_Pic (scr_vrect.x+64, scr_vrect.y, scr_net);
+}
+
+/*
+==============
+SCR_DrawRam
+==============
+*/
+// cypress -- modified to draw the amount of non-hunk
+// memory available.
+void SCR_DrawRam (void)
+{
+	if (!scr_showram.value)
+		return;
+
+	Draw_String(300, 0, va("%d kB", pspSdkTotalFreeUserMemSize()/1024));
 }
 
 /*
