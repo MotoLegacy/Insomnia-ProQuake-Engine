@@ -46,6 +46,7 @@ endif
 COMMON_OBJS = \
 	$(OBJ_DIR)/psp/battery.o \
 	$(OBJ_DIR)/psp/VramExt.o \
+	$(OBJ_DIR)/psp/kernelmemcpy.o \
 	$(OBJ_DIR)/psp/input.o \
 	$(OBJ_DIR)/psp/main.o \
 	$(OBJ_DIR)/psp/math.o \

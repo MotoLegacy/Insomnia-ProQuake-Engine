@@ -135,4 +135,10 @@ void Cache_Report (void);
 void Hunk_Print_f (void);
 void Hunk_Print (qboolean all);
 
-void* memcpy_vfpu(void* dst, void* src, unsigned int size);
+void memcpy_vfpu(void* dst, void* src, unsigned int size);
+
+u32* sceKernelMemcpy(void *dst, const void *src, unsigned int size);
+
+
+// mischievous little hack hehe
+#define memcpy(D, S, L) sceKernelMemcpy(D, S, L)

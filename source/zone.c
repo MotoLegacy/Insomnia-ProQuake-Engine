@@ -49,7 +49,7 @@ typedef struct
 void Cache_FreeLow (int new_low_hunk);
 void Cache_FreeHigh (int new_high_hunk);
 
-void* memcpy_vfpu( void* dst, void* src, unsigned int size )
+void memcpy_vfpu( void* dst, void* src, unsigned int size )
 {
 	u8* src8 = (u8*)src;
 	u8* dst8 = (u8*)dst;
@@ -78,7 +78,7 @@ void* memcpy_vfpu( void* dst, void* src, unsigned int size )
 					*dst32++ = *src32++;
 					size -= 4;
 				}
-				if (size==0) return (dst);		// fast out
+				if (size==0) return;		// fast out
 				while (size>=16)
 				{
 					*dst32++ = *src32++;
@@ -87,7 +87,7 @@ void* memcpy_vfpu( void* dst, void* src, unsigned int size )
 					*dst32++ = *src32++;
 					size -= 16;
 				}
-				if (size==0) return (dst);		// fast out
+				if (size==0) return;		// fast out
 				src8 = (u8*)src32;
 				dst8 = (u8*)dst32;
 				break;
@@ -103,7 +103,7 @@ void* memcpy_vfpu( void* dst, void* src, unsigned int size )
 						*dst32++ = (d << 24) | (c << 16) | (b << 8) | a;
 						size -= 4;
 					}
-					if (size==0) return (dst);		// fast out
+					if (size==0) return;		// fast out
 					dst8 = (u8*)dst32;
 				}
 				break;
@@ -328,42 +328,6 @@ void* memcpy_vfpu( void* dst, void* src, unsigned int size )
 					:"$8","$9","$10","$11","memory"
 					);
 			}
-			if (size>16)
-			// Invalidate the last cache line where the max remaining 63 bytes are
-			asm(".set	push\n"					// save assembler option
-				".set	noreorder\n"			// suppress reordering
-				"cache	0x1B, 0(%0)\n"
-				"sync\n"
-				".set	pop\n"					// restore assembler option
-				::"r"(dst64a));
-			while (size>=16)
-			{
-				asm(".set	push\n"					// save assembler option
-					".set	noreorder\n"			// suppress reordering
-					"lwr	 $8,  0(%1)\n"			//
-					"lwl	 $8,  3(%1)\n"			// $8  = *(s + 0)
-					"lwr	 $9,  4(%1)\n"			//
-					"lwl	 $9,  7(%1)\n"			// $9  = *(s + 4)
-					"lwr	$10,  8(%1)\n"			//
-					"lwl	$10, 11(%1)\n"			// $10 = *(s + 8)
-					"lwr	$11, 12(%1)\n"			//
-					"lwl	$11, 15(%1)\n"			// $11 = *(s + 12)
-					"mtv	 $8, s000\n"
-					"mtv	 $9, s001\n"
-					"mtv	$10, s002\n"
-					"mtv	$11, s003\n"
-
-					"sv.q	c000, 0(%0), wb\n"
-					// Lots of variable updates... but get hidden in sv.q latency anyway
-					"addiu	%2, %2, -16\n"
-					"addiu	%1, %1, 16\n"
-					"addiu	%0, %0, 16\n"
-					".set	pop\n"					// restore assembler option
-					:"+r"(udst8),"+r"(src8),"+r"(size)
-					:
-					:"$8","$9","$10","$11","memory"
-					);
-			}
 			asm(".set	push\n"					// save assembler option
 				".set	noreorder\n"			// suppress reordering
 				"vflush\n"						// Flush VFPU writeback cache
@@ -374,13 +338,15 @@ void* memcpy_vfpu( void* dst, void* src, unsigned int size )
 	}
 
 bytecopy:
+	if (size > 0)
+		sceKernelMemcpy(dst8, src8, size);
 	// Copy the remains byte per byte...
+	/*
 	while (size--)
 	{
 		*dst8++ = *src8++;
 	}
-
-	return (dst);
+	*/
 }
 
 /*
