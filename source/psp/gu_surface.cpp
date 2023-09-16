@@ -578,6 +578,10 @@ static void R_BlendLightmaps (void)
 	sceGuDepthMask (GU_FALSE);
 }
 
+#ifdef CLIPPING_DEBUGGING
+int faces_checked, faces_clipped, faces_rejected;
+#endif
+
 int ClipFace (msurface_t * fa)
 {
 	// skip maths if broad phase tells us we don't need clipping
@@ -587,11 +591,16 @@ int ClipFace (msurface_t * fa)
 		fa->polys->display_list_verts = fa->polys->verts;
 		return fa->polys->numverts;
 	}
+
 	// shpuld: moved clipping here to have it in one place only
 	int verts_total = 0;
 	glpoly_t* poly = fa->polys;
 	const int unclipped_vertex_count = poly->numverts;
 	const glvert_t* const unclipped_vertices = poly->verts;
+
+	#ifdef CLIPPING_DEBUGGING
+	faces_checked += 1;
+	#endif
 
 	if (clipping::is_clipping_required(
 		unclipped_vertices,
@@ -609,9 +618,16 @@ int ClipFace (msurface_t * fa)
 
 		verts_total += clipped_vertex_count;
 
+		#ifdef CLIPPING_DEBUGGING
+		faces_clipped += 1;
+		#endif
+
 		// Did we have any vertices left?
 		if (!clipped_vertex_count)
 		{
+			#ifdef CLIPPING_DEBUGGING
+			faces_rejected += 1;
+			#endif
 			poly->numclippedverts = 0;
 			return verts_total;
 		}
@@ -1198,6 +1214,14 @@ void R_DrawWorld (void)
 //#ifdef QUAKE2
 	R_ClearSkyBox ();
 //#endif
+
+	#ifdef CLIPPING_DEBUGGING
+	Con_Printf("%d, %d, %d\n", faces_checked, faces_clipped, faces_rejected);
+
+	faces_checked = 0;
+	faces_clipped = 0;
+	faces_rejected = 0;
+	#endif
 
 	R_RecursiveWorldNode (cl.worldmodel->nodes, false);
 

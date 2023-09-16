@@ -445,12 +445,6 @@ void D_DrawParticle (particle_t *pparticle, vec3_t up, vec3_t right, float scale
 {
 	unsigned int color = d_8to24table[static_cast<int>(pparticle->color)];
 
-	struct part_vertex {
-		float s, t;
-		unsigned int color;
-		float x, y, z;
-	};
-
 	part_vertex* const vertices = static_cast<part_vertex*>(sceGuGetMemory(2*sizeof(part_vertex)));
 
 	vertices[0].x = pparticle->org[0];

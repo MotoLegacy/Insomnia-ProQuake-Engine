@@ -340,13 +340,6 @@ void memcpy_vfpu( void* dst, void* src, unsigned int size )
 bytecopy:
 	if (size > 0)
 		sceKernelMemcpy(dst8, src8, size);
-	// Copy the remains byte per byte...
-	/*
-	while (size--)
-	{
-		*dst8++ = *src8++;
-	}
-	*/
 }
 
 /*

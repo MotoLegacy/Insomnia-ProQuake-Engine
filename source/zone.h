@@ -139,6 +139,5 @@ void memcpy_vfpu(void* dst, void* src, unsigned int size);
 
 u32* sceKernelMemcpy(void *dst, const void *src, unsigned int size);
 
-
-// mischievous little hack hehe
+// Kernel memcpy is always faster so never prefer regular one 
 #define memcpy(D, S, L) sceKernelMemcpy(D, S, L)
