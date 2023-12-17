@@ -1723,7 +1723,7 @@ R_SetupFrame
 */
 void R_SetupFrame (void)
 {
-	//Fog_SetupFrame ();
+	Fog_SetupFrame ();
 
 // don't allow cheats in multiplayer
 	if (cl.maxclients > 1)
@@ -1949,7 +1949,7 @@ void R_RenderScene (void)
         sceGuFog ( r_refdef.fog_start, r_refdef.fog_end, GU_COLOR( r_refdef.fog_red * 0.01f, r_refdef.fog_green * 0.01f, r_refdef.fog_blue * 0.01f, 1.0f ) );
 	}
 */
-	//Fog_EnableGFog (); //johnfitz
+	Fog_EnableGFog (); //johnfitz
 
 	R_DrawWorld ();		// adds static entities to the list
 
@@ -1967,7 +1967,7 @@ void R_RenderScene (void)
 
 	R_DrawViewModel ();
 
-	//Fog_DisableGFog (); //johnfitz
+	Fog_DisableGFog (); //johnfitz
 #ifdef GLTEST
 	Test_Draw ();
 #endif

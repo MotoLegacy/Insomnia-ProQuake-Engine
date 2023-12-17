@@ -289,7 +289,7 @@ void R_Init (void)
 	R_InitParticleTexture ();
 
     Sky_Init (); //johnfitz
-	//Fog_Init (); //johnfitz
+	Fog_Init (); //johnfitz
 
 	R_CalculatePspVertexNormals ();
 
