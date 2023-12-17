@@ -215,6 +215,46 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, floa
 }
 
 /*
+==================
+SV_LocalSound - for 2021 rerelease
+==================
+*/
+#define svc_localsound		56
+void SV_LocalSound (client_t *client, const char *sample)
+{
+	int	sound_num/*, field_mask*/;
+
+	for (sound_num = 1; sound_num < MAX_SOUNDS && sv.sound_precache[sound_num]; sound_num++)
+	{
+		if (!strcmp(sample, sv.sound_precache[sound_num]))
+			break;
+	}
+	if (sound_num == MAX_SOUNDS || !sv.sound_precache[sound_num])
+	{
+		Con_Printf ("SV_LocalSound: %s not precached\n", sample);
+		return;
+	}
+
+	// field_mask = 0;
+	// if (sound_num >= 256)
+	// {
+	// 	if (sv.protocol == PROTOCOL_NETQUAKE)
+	// 		return;
+	// 	field_mask = SND_LARGESOUND;
+	// }
+
+	if (client->message.cursize > client->message.maxsize-4)
+		return;
+
+	MSG_WriteByte (&client->message, svc_localsound);
+	// MSG_WriteByte (&client->message, field_mask);
+	// if (field_mask & SND_LARGESOUND)
+	// 	MSG_WriteShort (&client->message, sound_num);
+	// else
+		MSG_WriteByte (&client->message, sound_num);
+}
+
+/*
 ==============================================================================
 
 CLIENT SPAWNING
@@ -488,11 +528,7 @@ Q1_HullPointContents
 static int Q1_HullPointContents (hull_t *hull, int num, vec3_t p)
 {
 	float		d;
-#ifdef FITZQUAKE_PROTOCOL
 	mclipnode_t *node; //johnfitz -- was dclipnode_t
-#else
-	dclipnode_t	*node;
-#endif
 	mplane_t	*plane;
 
 	while (num >= 0)
@@ -525,11 +561,7 @@ static int Q1_HullPointContents (hull_t *hull, int num, vec3_t p)
 #define	Q1CONTENTS_SKY		-6
 qboolean Q1BSP_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
 {
-#ifdef FITZQUAKE_PROTOCOL
 	mclipnode_t *node; //johnfitz -- was dclipnode_t
-#else
-	dclipnode_t	*node;
-#endif
 	mplane_t	*plane;
 	float		t1, t2;
 	float		frac;

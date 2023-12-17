@@ -38,8 +38,12 @@ m*_t structures are in-memory
 #define	EF_MUZZLEFLASH 			2
 #define	EF_BRIGHTLIGHT 			4
 #define	EF_DIMLIGHT 			8
-#define	EF_REDLIGHT 			16
-#define	EF_BLUELIGHT 			32
+#define EF_QEX_QUADLIGHT		16	// 2021 rerelease
+#define EF_QEX_PENTALIGHT		32	// 2021 rerelease
+#define EF_QEX_CANDLELIGHT		64	// 2021 rerelease
+
+// #define	EF_REDLIGHT 			16
+// #define	EF_BLUELIGHT 			32
 
 /*
 ==============================================================================
@@ -51,6 +55,7 @@ BRUSH MODELS
 
 
 // in memory representation
+typedef dlclipnode_t mclipnode_t;
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct
 {
@@ -99,7 +104,7 @@ typedef struct texture_s
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct
 {
-	unsigned short	v[2];
+	unsigned int	v[2];
 	unsigned int	cachededgeoffset;
 } medge_t;
 
@@ -183,8 +188,8 @@ typedef struct mnode_s
 	mplane_t	*plane;
 	struct mnode_s	*children[2];
 
-	unsigned short		firstsurface;
-	unsigned short		numsurfaces;
+	unsigned int		firstsurface;
+	unsigned int		numsurfaces;
 } mnode_t;
 
 
@@ -212,7 +217,7 @@ typedef struct mleaf_s
 // !!! if this is changed, it must be changed in asm_i386.h too !!!
 typedef struct
 {
-	dclipnode_t	*clipnodes;
+	mclipnode_t	*clipnodes;
 	mplane_t	*planes;
 	int			firstclipnode;
 	int			lastclipnode;
@@ -411,7 +416,7 @@ typedef struct model_s
 	int			*surfedges;
 
 	int			numclipnodes;
-	dclipnode_t	*clipnodes;
+	mclipnode_t	*clipnodes;
 
 	int			nummarksurfaces;
 	msurface_t	**marksurfaces;

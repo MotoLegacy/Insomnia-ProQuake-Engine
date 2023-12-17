@@ -788,30 +788,50 @@ static void CL_RelinkEntities (void)
             dl->color[2] = 0.5;
 #endif
 		}
+		if (ent->effects & EF_QEX_QUADLIGHT)
+		{
+			dl = CL_AllocDlight (i);
+			VectorCopy (ent->origin,  dl->origin);
+			dl->radius = 200 + (rand()&31);
+			dl->die = cl.time + 0.001;
+			dl->color[0] = 0.25f;
+			dl->color[1] = 0.25f;
+			dl->color[2] = 1.0f;
+		}
+		if (ent->effects & EF_QEX_PENTALIGHT)
+		{
+			dl = CL_AllocDlight (i);
+			VectorCopy (ent->origin,  dl->origin);
+			dl->radius = 200 + (rand()&31);
+			dl->die = cl.time + 0.001;
+			dl->color[0] = 1.0f;
+			dl->color[1] = 0.25f;
+			dl->color[2] = 0.25f;
+		}
 #ifdef SUPPORTS_KUROK
-        // Kurok effects
-        if (ent->effects & EF_REDLIGHT)
-        {
-            dl = CL_AllocDlight (i);
-            VectorCopy (ent->origin,  dl->origin);
-            dl->radius = 200 + (rand()&31);
-            dl->die = cl.time + 0.001;
-            dl->radius = 150 + (rand()&31);
-            dl->color[0] = 2;
-            dl->color[1] = 0.25;
-            dl->color[2] = 0.25;
-        }
-        if (ent->effects & EF_BLUELIGHT)
-        {
-            dl = CL_AllocDlight (i);
-            VectorCopy (ent->origin,  dl->origin);
-            dl->radius = 200 + (rand()&31);
-            dl->die = cl.time + 0.001;
-            dl->radius = 150 + (rand()&31);
-            dl->color[0] = 0.25;
-            dl->color[1] = 0.25;
-            dl->color[2] = 2;
-        }
+        // // Kurok effects
+        // if (ent->effects & EF_REDLIGHT)
+        // {
+        //     dl = CL_AllocDlight (i);
+        //     VectorCopy (ent->origin,  dl->origin);
+        //     dl->radius = 200 + (rand()&31);
+        //     dl->die = cl.time + 0.001;
+        //     dl->radius = 150 + (rand()&31);
+        //     dl->color[0] = 2;
+        //     dl->color[1] = 0.25;
+        //     dl->color[2] = 0.25;
+        // }
+        // if (ent->effects & EF_BLUELIGHT)
+        // {
+        //     dl = CL_AllocDlight (i);
+        //     VectorCopy (ent->origin,  dl->origin);
+        //     dl->radius = 200 + (rand()&31);
+        //     dl->die = cl.time + 0.001;
+        //     dl->radius = 150 + (rand()&31);
+        //     dl->color[0] = 0.25;
+        //     dl->color[1] = 0.25;
+        //     dl->color[2] = 2;
+        // }
 #endif
 
 #ifdef QUAKE2

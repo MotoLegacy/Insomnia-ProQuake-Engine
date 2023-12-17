@@ -33,11 +33,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MAX_MAP_PLANES		8192
 #define	MAX_MAP_NODES		32767		// because negative shorts are contents
 #define	MAX_MAP_CLIPNODES	32767		//
-#ifdef FITZQUAKE_PROTOCOL
-#define	MAX_MAP_LEAFS		32767
-#else
-#define	MAX_MAP_LEAFS		8192
-#endif
+#define MAX_MAP_LEAFS 		16384
+// #ifdef FITZQUAKE_PROTOCOL
+// #define	MAX_MAP_LEAFS		32767
+// #else
+// #define	MAX_MAP_LEAFS		8192
+// #endif
 #define	MAX_MAP_VERTS		65535
 #define	MAX_MAP_FACES		65535
 #define	MAX_MAP_MARKSURFACES 65535
@@ -58,6 +59,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define Q1_BSPVERSION	29
 #define HL_BSPVERSION	30
+
+// cypress -- support for quakespasm BSP2 (for 2021 re-release addons!)
+// i'm only supporting version 2 here, not first iteration.
+#define B2_BSPVERSION 	(('B' << 0) | ('S' << 8) | ('P' << 16) | ('2'<<24))
 
 typedef struct
 {
@@ -169,8 +174,24 @@ typedef struct
 typedef struct
 {
 	int			planenum;
+	int			children[2];	// negative numbers are -(leafs+1), not nodes
+	float		mins[3];		// for sphere culling
+	float		maxs[3];
+	unsigned int	firstface;
+	unsigned int	numfaces;	// counting both sides
+} dlnode_t;
+
+typedef struct
+{
+	int			planenum;
 	short		children[2];	// negative numbers are contents
 } dclipnode_t;
+
+typedef struct
+{
+	int			planenum;
+	int			children[2];	// negative numbers are contents
+} dlclipnode_t;
 
 
 typedef struct texinfo_s
@@ -188,6 +209,11 @@ typedef struct
 	unsigned short	v[2];		// vertex numbers
 } dedge_t;
 
+typedef struct
+{
+	unsigned int	v[2];		// vertex numbers
+} dledge_t;
+
 #define	MAXLIGHTMAPS	4
 typedef struct
 {
@@ -203,7 +229,19 @@ typedef struct
 	int			lightofs;		// start of [numstyles*surfsize] samples
 } dface_t;
 
+typedef struct
+{
+	int			planenum;
+	int			side;
 
+	int			firstedge;		// we must support > 64k edges
+	int			numedges;
+	int			texinfo;
+
+// lighting info
+	byte		styles[MAXLIGHTMAPS];
+	int			lightofs;		// start of [numstyles*surfsize] samples
+} dlface_t;
 
 #define	AMBIENT_WATER	0
 #define	AMBIENT_SKY		1
@@ -228,6 +266,20 @@ typedef struct
 	byte		ambient_level[NUM_AMBIENTS];
 } dleaf_t;
 
+typedef struct
+{
+	int			contents;
+	int			visofs;				// -1 = no visibility info
+
+	float		mins[3];			// for frustum culling
+	float		maxs[3];
+
+	unsigned int		firstmarksurface;
+	unsigned int		nummarksurfaces;
+
+	byte		ambient_level[NUM_AMBIENTS];
+} dlleaf_t;
+
 
 //============================================================================
 
@@ -251,7 +303,7 @@ extern	int			entdatasize;
 extern	char		dentdata[MAX_MAP_ENTSTRING];
 
 extern	int			numleafs;
-extern	dleaf_t		dleafs[MAX_MAP_LEAFS];
+extern	dlleaf_t	dleafs[MAX_MAP_LEAFS];
 
 extern	int			numplanes;
 extern	dplane_t	dplanes[MAX_MAP_PLANES];
@@ -260,19 +312,19 @@ extern	int			numvertexes;
 extern	dvertex_t	dvertexes[MAX_MAP_VERTS];
 
 extern	int			numnodes;
-extern	dnode_t		dnodes[MAX_MAP_NODES];
+extern	dlnode_t	dnodes[MAX_MAP_NODES];
 
 extern	int			numtexinfo;
 extern	texinfo_t	texinfo[MAX_MAP_TEXINFO];
 
 extern	int			numfaces;
-extern	dface_t		dfaces[MAX_MAP_FACES];
+extern	dlface_t	dfaces[MAX_MAP_FACES];
 
 extern	int			numclipnodes;
-extern	dclipnode_t	dclipnodes[MAX_MAP_CLIPNODES];
+extern	mclipnode_t	dclipnodes[MAX_MAP_CLIPNODES];
 
 extern	int			numedges;
-extern	dedge_t		dedges[MAX_MAP_EDGES];
+extern	dledge_t	dedges[MAX_MAP_EDGES];
 
 extern	int			nummarksurfaces;
 extern	unsigned short	dmarksurfaces[MAX_MAP_MARKSURFACES];

@@ -94,6 +94,8 @@ cvar_t		scr_showpause = {"showpause","1"};
 cvar_t		scr_printspeed = {"scr_printspeed","8"};
 cvar_t		scr_loadscreen = {"scr_loadscreen","1", qtrue};
 
+cvar_t		scr_usekfont = {"scr_usekfont", "0"}; // 2021 re-release
+
 extern "C"	cvar_t	crosshair;
 //extern "C"  cvar_t  v_idlescale;
 
@@ -395,6 +397,7 @@ void SCR_Init (void)
 	Cvar_RegisterVariable (&scr_centertime, NULL);
 	Cvar_RegisterVariable (&scr_printspeed, NULL);
 	Cvar_RegisterVariable (&scr_loadscreen, NULL);
+	Cvar_RegisterVariable (&scr_usekfont, NULL); // 2021 re-release
 //
 // register our commands
 

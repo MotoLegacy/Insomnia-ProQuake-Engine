@@ -72,10 +72,26 @@ char *svc_strings[] =
 	"",
 	"",
 	"svc_skybox", // 37		// [string] skyname
-	"",
+	"svc_botchat",	// 38 (2021 RE-RELEASE)
 	"",
 	"",
 	"svc_fog", // 41		// [byte] start [byte] end [byte] red [byte] green [byte] blue [float] time
+	"",
+	"",
+	"",
+// 2021 RE-RELEASE:
+	"svc_setviews", // 45
+	"svc_updateping", // 46
+	"svc_updatesocial", // 47
+	"svc_updateplinfo", // 48
+	"svc_rawprint", // 49
+	"svc_servervars", // 50
+	"svc_seq", // 51
+	"svc_achievement", // 52
+	"svc_chat", // 53
+	"svc_levelcompleted", // 54
+	"svc_backtolobby", // 55
+	"svc_localsound" // 56
 };
 
 //=============================================================================
@@ -140,6 +156,24 @@ static void CL_ParseStartSoundPacket(void)
 		pos[i] = MSG_ReadCoord ();
 
     S_StartSound (ent, channel, cl.sound_precache[sound_num], pos, volume/255.0, attenuation);
+}
+
+/*
+==================
+CL_ParseLocalSound - for 2021 rerelease
+==================
+*/
+void CL_ParseLocalSound(void)
+{
+	int /*field_mask, */sound_num;
+
+	//field_mask = MSG_ReadByte();
+	//sound_num = (field_mask&SND_LARGESOUND) ? MSG_ReadShort() : MSG_ReadByte();
+	sound_num = MSG_ReadByte();
+	if (sound_num >= MAX_SOUNDS)
+		Host_Error ("CL_ParseLocalSound: %i > MAX_SOUNDS", sound_num);
+
+	S_LocalSound (cl.sound_precache[sound_num]->name);
 }
 
 /*
@@ -1201,6 +1235,8 @@ CL_ParseProQuakeString
 CL_ParseServerMessage
 =====================
 */
+#define svc_achievement		52
+#define svc_localsound		56
 int last_message;
 void CL_ParseServerMessage (void)
 {
@@ -1478,6 +1514,14 @@ void CL_ParseServerMessage (void)
 
 		case svc_fog:
 			//Fog_ParseServerMessage ();
+			break;
+
+		//used by the 2021 rerelease
+		case svc_achievement:
+			Con_DPrintf("Ignoring svc_achievement (%s)\n", MSG_ReadString());
+			break;
+		case svc_localsound:
+			CL_ParseLocalSound();
 			break;
 		}
 	}

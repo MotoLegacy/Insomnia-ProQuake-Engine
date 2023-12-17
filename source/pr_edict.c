@@ -1020,6 +1020,90 @@ void ED_LoadFromFile (char *data)
 	Con_DPrintf ("%i entities inhibited\n", inhibit);
 }
 
+/*
+===============
+PR_HasGlobal
+===============
+*/
+static qboolean PR_HasGlobal (const char *name, float value)
+{
+	ddef_t *g = ED_FindGlobal (name);
+	return g && (g->type & ~DEF_SAVEGLOBAL) == ev_float && G_FLOAT (g->ofs) == value;
+}
+
+
+/*
+===============
+PR_FindSupportedEffects
+
+Checks for the presence of Quake 2021 release effects flags and returns a mask
+with the correspondings bits either on or off depending on the result, in order
+to avoid conflicts (e.g. Arcane Dimensions uses bit 32 for its explosions)
+===============
+*/
+static int PR_FindSupportedEffects (void)
+{
+	qboolean isqex = 
+		PR_HasGlobal ("EF_QUADLIGHT", EF_QEX_QUADLIGHT) &&
+		(PR_HasGlobal ("EF_PENTLIGHT", EF_QEX_PENTALIGHT) || PR_HasGlobal ("EF_PENTALIGHT", EF_QEX_PENTALIGHT))
+	;
+	return isqex ? -1 : -1 & ~(EF_QEX_QUADLIGHT|EF_QEX_PENTALIGHT|EF_QEX_CANDLELIGHT);
+}
+
+/*
+===============
+PR_PatchRereleaseBuiltins
+
+for 2021 re-release
+===============
+*/
+static const exbuiltin_t exbuiltins[] = {
+	/* Update-1 adds the following builtins with new ids. Patch them to use old indices.
+	 * (https://steamcommunity.com/games/2310/announcements/detail/2943653788150871156) */
+	{ "centerprint", -90, -73 },
+	{ "bprint", -91, -23 },
+	{ "sprint", -92, -24 },
+
+	/* Update-3 changes its unique builtins to be looked up by name instead of builtin
+	 * numbers, to avoid conflict with other engines. Patch them to use our indices.
+	 * (https://steamcommunity.com/games/2310/announcements/detail/3177861894960065435) */
+	{ "ex_centerprint", 0, -73 },
+	{ "ex_bprint", 0, -23 },
+	{ "ex_sprint", 0, -24 },
+	{ "ex_finaleFinished", 0, -79 },
+
+	{ "ex_localsound", 0, -80 },
+
+	{ "ex_draw_point", 0, -81 },
+	{ "ex_draw_line", 0, -82 },
+	{ "ex_draw_arrow", 0, -83 },
+	{ "ex_draw_ray", 0,  -84 },
+	{ "ex_draw_circle", 0, -85 },
+	{ "ex_draw_bounds", 0, -86 },
+	{ "ex_draw_worldtext", 0, -87 },
+	{ "ex_draw_sphere", 0, -88 },
+	{ "ex_draw_cylinder", 0, -89 },
+
+	{ "ex_CheckPlayerEXFlags", 0, -90 },
+	{ "ex_walkpathtogoal", 0,  -91 },
+	{ "ex_bot_movetopoint", 0, -92 },
+	{ "ex_bot_followentity", 0, -92 },
+
+	{ NULL, 0, 0 }			/* end-of-list. */
+};
+
+static void PR_PatchRereleaseBuiltins (void)
+{
+	const exbuiltin_t *ex = exbuiltins;
+	dfunction_t *f;
+
+	for ( ; ex->name != NULL; ++ex)
+	{
+		f = ED_FindFunction (ex->name);
+		if (f && f->first_statement == ex->first_statement)
+			f->first_statement = ex->patch_statement;
+	}
+}
 
 /*
 ===============
@@ -1115,6 +1199,7 @@ void PR_LoadProgs (char *progsname)
 		((int *)pr_globals)[i] = LittleLong (((int *)pr_globals)[i]);
 
 	FindEdictFieldOffsets ();
+	PR_PatchRereleaseBuiltins();
 }
 
 

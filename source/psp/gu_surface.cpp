@@ -34,8 +34,8 @@ using namespace quake;
 
 int			skytexturenum;
 
-#define	BLOCK_WIDTH  128
-#define	BLOCK_HEIGHT 128
+#define	BLOCK_WIDTH  256
+#define	BLOCK_HEIGHT 256
 
 int		lightmap_textures;
 

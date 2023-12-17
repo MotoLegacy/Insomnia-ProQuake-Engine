@@ -50,11 +50,7 @@ HULL BOXES
 
 
 static	hull_t		box_hull;
-#ifdef FITZQUAKE_PROTOCOL
 static	mclipnode_t	box_clipnodes[6]; //johnfitz -- was dclipnode_t
-#else
-static	dclipnode_t	box_clipnodes[6];
-#endif
 static	mplane_t	box_planes[6];
 
 /*
@@ -487,11 +483,7 @@ SV_HullPointContents
 int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
 {
 	float		d;
-#ifdef FITZQUAKE_PROTOCOL
 	mclipnode_t	*node; //johnfitz -- was dclipnode_t
-#else
-	dclipnode_t	*node;
-#endif
 	mplane_t	*plane;
 
 	while (num >= 0)
@@ -574,7 +566,7 @@ struct rhtctx_s
 {
 	unsigned int hitcontents;
 	vec3_t start, end;
-	dclipnode_t	*clipnodes;
+	mclipnode_t	*clipnodes;
 	mplane_t	*planes;
 };
 
@@ -595,7 +587,7 @@ ezQuake also has a version of this logic, but I trust mine more.
 */
 static int Q1BSP_RecursiveHullTrace (struct rhtctx_s *ctx, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
 {
-	dclipnode_t	*node;
+	mclipnode_t	*node;
 	mplane_t	*plane;
 	float		t1, t2;
 	vec3_t		mid;

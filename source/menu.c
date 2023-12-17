@@ -5624,6 +5624,13 @@ void M_ServerList_Key (int key)
 }
 
 //=============================================================================
+/* Credits menu -- used by the 2021 re-release */
+
+void M_Menu_Credits_f (void)
+{
+}
+
+//=============================================================================
 /* Menu Subsystem */
 
 
@@ -5642,6 +5649,7 @@ void M_Init (void)
 	Cmd_AddCommand ("menu_video", M_Menu_Video_f);
 	Cmd_AddCommand ("help", M_Menu_Help_f);
 	Cmd_AddCommand ("menu_quit", M_Menu_Quit_f);
+	Cmd_AddCommand ("menu_credits", M_Menu_Credits_f);
 }
 
 

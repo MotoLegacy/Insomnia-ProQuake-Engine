@@ -94,6 +94,10 @@ cvar_t	pausable = {"pausable","1"};
 
 cvar_t	temp1 = {"temp1","0"};
 
+cvar_t 	campaign = {"campaign", "0"}; // for the 2021 rerelease
+cvar_t 	horde = {"horde", "0"}; // for the 2021 rerelease
+cvar_t 	sv_cheats = {"sv_cheats", "0"}; // for the 2021 rerelease
+
 #ifdef PSP_MP3_SUPPORT
 qboolean bmg_type_changed = false;
 #endif
@@ -360,6 +364,10 @@ void Host_InitLocal (void)
 	Cvar_RegisterVariable (&pq_maxfps, NULL);		// JPG 1.05
 	Cvar_RegisterVariable (&pq_logbinds, NULL);	// JPG 3.20 - log player binds
 #endif
+
+	Cvar_RegisterVariable (&campaign, NULL);
+	Cvar_RegisterVariable (&horde, NULL);
+	Cvar_RegisterVariable (&sv_cheats, NULL);
 
 	Host_FindMaxClients ();
 
@@ -1150,6 +1158,8 @@ void Host_Init (quakeparms_t *parms)
 
 
 	}
+
+	//LOC_Init (); // for 2021 rerelease support.
 
 	// SUPERHOT Quake's many cvars
 	if (IS_SUPERHOT)
