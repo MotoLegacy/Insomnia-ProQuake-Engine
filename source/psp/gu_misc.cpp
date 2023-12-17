@@ -481,7 +481,7 @@ void R_NewMap (void)
 	GL_BuildLightmaps ();
 
 	Sky_NewMap (); //johnfitz -- skybox in worldspawn
-	//Fog_NewMap (); //johnfitz -- global fog in worldspawn
+	Fog_NewMap (); //johnfitz -- global fog in worldspawn
 
     // Reset these back to normal.
 #ifdef SUPPORTS_KUROK

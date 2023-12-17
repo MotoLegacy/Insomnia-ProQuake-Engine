@@ -32,6 +32,7 @@ extern "C"
 
 #include "lightmaps.h"
 #include <list>
+#include <float.h>
 
 int LIGHTMAP_BYTES;
 int MAX_LIGHTMAPS;
@@ -701,6 +702,7 @@ void Mod_LoadLighting (lump_t *l)
 			{
 				Con_DPrintf("%s loaded", litfilename);
 				loadmodel->lightdata = data + 8;
+				LIGHTMAP_BYTES = 4; // cypress -- 2021 rerelease
 				return;
 			}
 			else
@@ -974,8 +976,8 @@ void CalcSurfaceExtents (msurface_t *s)
 	mvertex_t	*v;
 	mtexinfo_t	*tex;
 
-	mins[0] = mins[1] = 99999999;
-	maxs[0] = maxs[1] = -99999999;
+	mins[0] = mins[1] = FLT_MAX;
+	maxs[0] = maxs[1] = -FLT_MAX;
 
 	tex = s->texinfo;
 
@@ -999,11 +1001,11 @@ void CalcSurfaceExtents (msurface_t *s)
 
     for (i=0 ; i<2 ; i++)
     {
-        bmins[i] = floorf(mins[i]/16); //
-        bmaxs[i] = ceilf(maxs[i]/16); //
-        s->texturemins[i] = bmins[i] * 16;  //
-        s->extents[i] = (bmaxs[i] - bmins[i]) * 16; //
-        if ( !(tex->flags & TEX_SPECIAL) && s->extents[i] > MAX_SURF_EXTENTS /* 512 */ /* 256 */)
+        bmins[i] = floorf(mins[i]/16);
+        bmaxs[i] = ceilf(maxs[i]/16);
+        s->texturemins[i] = bmins[i] * 16;
+        s->extents[i] = (bmaxs[i] - bmins[i]) * 16;
+        if ( !(tex->flags & TEX_SPECIAL) && s->extents[i] > MAX_SURF_EXTENTS)
             Host_Error ("CalcSurfaceExtents: excessive surface extents (%d, normal max = %d), texture %s in %s\n", s->extents[i], MAX_SURF_EXTENTS, tex->texture->name, loadmodel->name); //johnfitz -- was 512 in glquake, 256 in winquake
     }
 }

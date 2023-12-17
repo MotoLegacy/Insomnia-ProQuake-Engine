@@ -254,14 +254,6 @@ store:
 			for (j=0 ; j<smax ; j++)
 			{
 				// LordHavoc: .lit support begin
-				/* LordHavoc: original code
-				t = *bl++;
-				t >>= 7;
-				if (t > 255)
-					t = 255;
-				dest[3] = 255-t;
-				dest += 4;
-				*/
 				// LordHavoc: positive lighting (would be 255-t if it were inverse like glquake was)
 				t = *bl++ >> 7;if (t > 255) t = 255;*dest++ = t;
 				t = *bl++ >> 7;if (t > 255) t = 255;*dest++ = t;
@@ -279,14 +271,6 @@ store:
 			for (j=0 ; j<smax ; j++)
 			{
 				// LordHavoc: .lit support begin
-				/* LordHavoc: original code
-				t = *bl++;
-				t >>= 7;
-				if (t > 255)
-					t = 255;
-				dest[3] = 255-t;
-				dest += 4;
-				*/
 				// LordHavoc: positive lighting (would be 255-t if it were inverse like glquake was)
 				t = *bl++ >> 7;if (t > 255) t = 255;*dest++ = t;
 				t = *bl++ >> 7;if (t > 255) t = 255;*dest++ = t;
@@ -296,20 +280,6 @@ store:
 			}
 		}
 		break;
-	/*
-		stride -= smax * 3;
-		bl = blocklights;
-		for (i=0 ; i<tmax ; i++, dest += stride)
-		{
-			for (j=0 ; j<smax ; j++)
-			{
-                t = *bl++ >> 7;if (t > 255) t = 255;*dest++ = t;
-                t = *bl++ >> 7;if (t > 255) t = 255;*dest++ = t;
-                t = *bl++ >> 7;if (t > 255) t = 255;*dest++ = t;
-			}
-		}
-		break;
-		*/
 	case 2:
 		bl = blocklights;
 		for (i=0 ; i<tmax ; i++ ,dest += stride)
@@ -328,26 +298,6 @@ store:
 			}
 		}
 		break;
-	/*
-		//stride -= (smax<<1);
-		bl = blocklights;
-		for (i=0 ; i<tmax ; i++ , dest += stride)
-		{
-			for (j=0 ; j<smax ; j++)
-			{
-				t = *bl++;
-				t >>= 7;
-				if (t > 255)
-					t = 255;
-				byte x = (t & 0x00f0) >> 4;
-
-				dest[2*j] = x | (x << 4);
-				dest[2*j+1] = x | (x << 4);
-				//dest += 2;
-			}
-		}
-		break;
-    */
 	case 1:
 		bl = blocklights;
 		for (i=0 ; i<tmax ; i++ ,dest += stride)
@@ -355,8 +305,6 @@ store:
 			for (j=0 ; j<smax ; j++)
 			{
 				// LordHavoc: .lit support begin
-				//t = *bl++; // LordHavoc: original code
-				//t >>= 7; // LordHavoc: original code
 				t = ((bl[0] + bl[1] + bl[2]) * 85) >> 15; // LordHavoc: basically / 3, but faster and combined with >> 7 shift down, note: actual number would be 85.3333...
 				bl += 3;
 				// LordHavoc: .lit support end
