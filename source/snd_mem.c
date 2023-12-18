@@ -115,7 +115,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 
 //	Con_Printf ("loading %s\n",namebuffer);
 
-	if (!(data = COM_LoadStackFile(namebuffer, stackbuf, sizeof(stackbuf))))
+	if (!(data = COM_LoadStackFile(namebuffer, stackbuf, sizeof(stackbuf), NULL)))
 	{
 		if (mod_nosoundwarn) // Developer print it instead if -nosoundwarn used
 			Con_DPrintf ("Couldn't load %s\n", namebuffer);

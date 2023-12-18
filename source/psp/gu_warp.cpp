@@ -952,13 +952,13 @@ void Sky_LoadSkyBox (char *name)
 
     // sky palette
     snprintf(skypalette, sizeof(skypalette),  "gfx/env/%s%spalette.lmp", name, size);
-    host_skybasepal = static_cast<byte*>(COM_LoadHunkFile (skypalette));
+    host_skybasepal = static_cast<byte*>(COM_LoadHunkFile (skypalette, NULL));
     if (!host_skybasepal)
     {
 		if (psp_system_model != PSP_MODEL_PHAT) {
 			char    size[64] = "_";
 			snprintf(skypalette, sizeof(skypalette),  "gfx/env/%s%spalette.lmp", name, size);
-			host_skybasepal = static_cast<byte*>(COM_LoadHunkFile (skypalette));
+			host_skybasepal = static_cast<byte*>(COM_LoadHunkFile (skypalette, NULL));
 
 			if (!host_skybasepal)
 			{
@@ -977,7 +977,7 @@ void Sky_LoadSkyBox (char *name)
     {
         mark = Hunk_LowMark ();
         snprintf(filename, sizeof(filename),  "gfx/env/%s%s%s.lmp", name, size, suf[i]);
-        f = static_cast<byte*>(COM_LoadHunkFile (filename));
+        f = static_cast<byte*>(COM_LoadHunkFile (filename, NULL));
 
 		if (psp_system_model != PSP_MODEL_PHAT) {
 			if (f) // Load up 512 x 512 sky textures if on slim psp.
@@ -993,7 +993,7 @@ void Sky_LoadSkyBox (char *name)
 			{
 				char    size[64] = "_";
 				snprintf(filename, sizeof(filename),  "gfx/env/%s%s%s.lmp", name, size, suf[i]);
-				f = static_cast<byte*>(COM_LoadHunkFile (filename));
+				f = static_cast<byte*>(COM_LoadHunkFile (filename, NULL));
 
 				if (f) // Last try
 				{

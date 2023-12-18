@@ -308,7 +308,7 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 	}
 
 // load the file
-	if (!(buf = (unsigned *)COM_LoadStackFile (mod->name, stackbuf, sizeof(stackbuf))))
+	if (!(buf = (unsigned *)COM_LoadStackFile (mod->name, stackbuf, sizeof(stackbuf), &mod->path_id)))
 	{
 		if (crash)
 			Host_Error ("Mod_LoadModel: %s not found", mod->name);
@@ -682,19 +682,27 @@ void Mod_LoadLighting (lump_t *l)
         MAX_LIGHTMAPS = 64;
     }
 
-	int i;
-	byte *in, *out, *data;
-	byte d;
-	char litfilename[1024];
+	int 			i;
+	byte 			*in, *out, *data;
+	byte 			d;
+	unsigned int 	path_id;
+	char 			litfilename[1024];
 	loadmodel->lightdata = NULL;
 	// LordHavoc: check for a .lit file
 	strcpy(litfilename, loadmodel->name);
 	COM_StripExtension(litfilename, litfilename);
 	strcat(litfilename, ".lit");
-	data = (byte*) COM_LoadHunkFile (litfilename);
+	data = (byte*) COM_LoadHunkFile (litfilename, &path_id);
 
 	if (data)
 	{
+		// use lit file only from the same gamedir as the map
+		// itself or from a searchpath with higher priority.
+		if (path_id < loadmodel->path_id)
+		{
+			Con_DPrintf("ignored %s from a gamedir with lower priority\n", litfilename);
+		}
+		else
 		if (data[0] == 'Q' && data[1] == 'L' && data[2] == 'I' && data[3] == 'T')
 		{
 			i = LittleLong(((int *)data)[1]);

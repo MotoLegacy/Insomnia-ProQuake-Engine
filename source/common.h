@@ -272,14 +272,14 @@ void COM_ForceExtension (char *path, char *extension);	// by joe
 void COM_WriteFile (char *filename, void *data, int len);
 
 void COM_CreatePath (char *path);
-int COM_OpenFile (char *filename, int *hndl);
-int COM_FOpenFile (char *filename, int *file);
+int COM_OpenFile (char *filename, int *hndl, unsigned int *path_id);
+int COM_FOpenFile (char *filename, int *file, unsigned int *path_id);
 void COM_CloseFile (int h);
 
-byte *COM_LoadStackFile (char *path, void *buffer, int bufsize);
-byte *COM_LoadTempFile (char *path);
-byte *COM_LoadHunkFile (char *path);
-void COM_LoadCacheFile (char *path, struct cache_user_s *cu);
+byte *COM_LoadStackFile (char *path, void *buffer, int bufsize, unsigned int *path_id);
+byte *COM_LoadTempFile (char *path, unsigned int *path_id);
+byte *COM_LoadHunkFile (char *path, unsigned int *path_id);
+void COM_LoadCacheFile (char *path, struct cache_user_s *cu, unsigned int *path_id);
 #ifdef HTTP_DOWNLOAD
 void COM_GetFolder (char *in, char *out);//R00k
 #endif

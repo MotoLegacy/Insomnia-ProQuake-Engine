@@ -365,74 +365,76 @@ typedef enum {
 
 typedef struct model_s
 {
-	char		name[MAX_QPATH];
-	qboolean	needload;		// bmodels and sprites don't cache normally
+	char			name[MAX_QPATH];
+	unsigned int	path_id;		// path id of the game directory
+									// that this model came from
+	qboolean		needload;		// bmodels and sprites don't cache normally
 
-	modtype_t	type;
-	int			numframes;
-	synctype_t	synctype;
+	modtype_t		type;
+	int				numframes;
+	synctype_t		synctype;
 
-	int			flags;
+	int				flags;
 
 // volume occupied by the model graphics
 
-	vec3_t		mins, maxs;
-	float		radius;
+	vec3_t			mins, maxs;
+	float			radius;
 
 //
 // solid volume for clipping
 //
-	qboolean	clipbox;
-	vec3_t		clipmins, clipmaxs;
+	qboolean		clipbox;
+	vec3_t			clipmins, clipmaxs;
 
 // brush model
-	int			firstmodelsurface, nummodelsurfaces;
+	int				firstmodelsurface, nummodelsurfaces;
 
-	int			numsubmodels;
-	dmodel_t	*submodels;
+	int				numsubmodels;
+	dmodel_t		*submodels;
 
-	int			numplanes;
-	mplane_t	*planes;
+	int				numplanes;
+	mplane_t		*planes;
 
-	int			numleafs;		// number of visible leafs, not counting 0
-	mleaf_t		*leafs;
+	int				numleafs;		// number of visible leafs, not counting 0
+	mleaf_t			*leafs;
 
-	int			numvertexes;
-	mvertex_t	*vertexes;
+	int				numvertexes;
+	mvertex_t		*vertexes;
 
-	int			numedges;
-	medge_t		*edges;
+	int				numedges;
+	medge_t			*edges;
 
-	int			numnodes;
-	mnode_t		*nodes;
+	int				numnodes;
+	mnode_t			*nodes;
 
-	int			numtexinfo;
-	mtexinfo_t	*texinfo;
+	int				numtexinfo;
+	mtexinfo_t		*texinfo;
 
-	int			numsurfaces;
-	msurface_t	*surfaces;
+	int				numsurfaces;
+	msurface_t		*surfaces;
 
-	int			numsurfedges;
-	int			*surfedges;
+	int				numsurfedges;
+	int				*surfedges;
 
-	int			numclipnodes;
-	mclipnode_t	*clipnodes;
+	int				numclipnodes;
+	mclipnode_t		*clipnodes;
 
-	int			nummarksurfaces;
-	msurface_t	**marksurfaces;
+	int				nummarksurfaces;
+	msurface_t		**marksurfaces;
 
-	hull_t		hulls[MAX_MAP_HULLS];
+	hull_t			hulls[MAX_MAP_HULLS];
 
-	int			numtextures;
-	texture_t	**textures;
+	int				numtextures;
+	texture_t		**textures;
 
-	byte		*visdata;
-	byte		*lightdata;
-	char		*entities;
+	byte			*visdata;
+	byte			*lightdata;
+	char			*entities;
 
-	int	 bspversion;
+	int	 			bspversion;
 
-	qboolean	isworldmodel;
+	qboolean		isworldmodel;
 
 // additional model data
 	cache_user_t	cache;		// only access through Mod_Extradata

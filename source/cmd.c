@@ -434,14 +434,14 @@ static void Cmd_Exec_f (void)
 
 	strlcpy (name, Cmd_Argv(1), sizeof(name));
 	mark = Hunk_LowMark ();
-	if (!(f = (char *)COM_LoadHunkFile (name))) {
+	if (!(f = (char *)COM_LoadHunkFile (name, NULL))) {
 		char	*p;
 
 		p = COM_SkipPath (name);
 		if (!strchr(p, '.'))
 		{	// no extension, so try the default (.cfg)
 			strlcat (name, ".cfg", sizeof(name));
-			f = (char *)COM_LoadHunkFile (name);
+			f = (char *)COM_LoadHunkFile (name, NULL);
 		}
 
 		if (!f) {

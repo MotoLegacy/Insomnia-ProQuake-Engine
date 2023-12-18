@@ -1123,7 +1123,7 @@ void PR_LoadProgs (char *progsname)
 
 	CRC_Init (&pr_crc);
 
-	if (!(progs = (dprograms_t *)COM_LoadHunkFile (progsname)))
+	if (!(progs = (dprograms_t *)COM_LoadHunkFile (progsname, NULL)))
 		Sys_Error ("PR_LoadProgs: couldn't load %s", progsname);
 
 	Con_DPrintf ("Programs occupy %iK.\n", com_filesize/1024);

@@ -69,7 +69,7 @@ void W_LoadWadFile (char *filename)
 	unsigned		i;
 	int				infotableofs;
 
-	if (!(wad_base = COM_LoadHunkFile (filename)))
+	if (!(wad_base = COM_LoadHunkFile (filename, NULL)))
 		Sys_Error ("W_LoadWadFile: couldn't load %s\n\nGame data files are required to run; usually this means you need Quake shareware or registered version.", filename);
 
 	header = (wadinfo_t *)wad_base;
