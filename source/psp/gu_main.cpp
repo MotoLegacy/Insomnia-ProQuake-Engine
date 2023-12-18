@@ -122,6 +122,12 @@ cvar_t  r_model_contrast = { "r_model_contrast", "0", qtrue};       // Toggle hi
 cvar_t  r_model_brightness = { "r_model_brightness", "1", qtrue};   // Toggle high brightness model lighting
 cvar_t  r_skyfog = {"r_skyfog", "1", qtrue};                        // Toggle sky fog
 
+// cypress -- don't lerp flames and stuff, from quakespasm
+cvar_t 	r_nolerp_list = {"r_nolerp_list", "progs/flame.mdl,progs/flame2.mdl,progs/braztall.mdl,progs/brazshrt.mdl,progs/longtrch.mdl,progs/flame_pyre.mdl,progs/v_saw.mdl,progs/v_xfist.mdl,progs/h2stuff/newfire.mdl"};
+// cypress -- using that same system, but for fbs and our weird additive blend enhancement.
+cvar_t 	r_fullbright_list = {"r_fullbright_list", "progs/eyes.mdl,progs/boss.mdl,progs/flame.mdl,progs/palmleav.mdl,progs/k_spike.mdl,progs/s_spike.mdl,progs/scope.mdl,progs/spike.mdl"};
+cvar_t 	r_additive_list = {"r_additive_list", "progs/flame2.mdl,progs/lavaball.mdl,progs/bolt.mdl,progs/bolt2.mdl,progs/bolt3.mdl,progs/s_light.mdl,progs/bullet.mdl,progs/explode.mdl,progs/laser.mdl"};
+
 cvar_t  vlight = {"vl_light", "0", qtrue};
 cvar_t  vlight_pitch = {"vl_pitch", "45", qtrue};
 cvar_t  vlight_yaw = {"vl_yaw", "45", qtrue};
@@ -1142,43 +1148,25 @@ void R_DrawAliasModel (entity_t *ent)
 	//	if (ambientlight < 8) // LordHavoc: original code
 	//		ambientlight = shadelight = 8; // LordHavoc: original code
 
-	if (!strcmp (clmodel->name, "progs/eyes.mdl") ||
-	    !strcmp (clmodel->name, "progs/flame.mdl") ||
-	    !strcmp (clmodel->name, "progs/palmleav.mdl") ||
-	    !strcmp (clmodel->name, "progs/k_spike.mdl") ||
-	    !strcmp (clmodel->name, "progs/s_spike.mdl") ||
-        !strcmp (clmodel->name, "progs/scope.mdl") ||
-	    !strcmp (clmodel->name, "progs/spike.mdl"))
-	{
-	// LordHavoc: .lit support begin
-	//	ambientlight = shadelight = 256; // LordHavoc: original code
+	if (ent->model->flags & MOD_FULLBRIGHT) {
 		lightcolor[0] = lightcolor[1] = lightcolor[2] = 256;
-	// LordHavoc: .lit support end
 		force_fullbright = true;
 	}
 
-	if (!strcmp (clmodel->name, "progs/flame2.mdl") ||
-	    !strcmp (clmodel->name, "progs/lavaball.mdl") ||
-	    !strcmp (clmodel->name, "progs/bolt.mdl") ||
-	    !strcmp (clmodel->name, "progs/bolt2.mdl") ||
-	    !strcmp (clmodel->name, "progs/bolt3.mdl") ||
-	    !strcmp (clmodel->name, "progs/s_light.mdl") ||
-	    !strcmp (clmodel->name, "progs/bullet.mdl") ||
-	    !strcmp (clmodel->name, "progs/explode.mdl") ||
-	    !strcmp (clmodel->name, "progs/laser.mdl"))
-	{
-	    lightcolor[0] = lightcolor[1] = lightcolor[2] = 256;
+	if (ent->model->flags & MOD_ADDITIVE) {
+		lightcolor[0] = lightcolor[1] = lightcolor[2] = 256;
 		additive = true;
 	}
 
-	if (!strcmp (clmodel->name, "progs/smoke.mdl") ||
-	    !strcmp (clmodel->name, "progs/glass1.mdl") ||
-	    !strcmp (clmodel->name, "progs/glass2.mdl") ||
-	    !strcmp (clmodel->name, "progs/glass3.mdl") ||
-	    !strcmp (clmodel->name, "progs/debris.mdl"))
-	{
-		filter = true;
-	}
+	// cypress -- commented out this kurok shit, for now (or something).
+	// if (!strcmp (clmodel->name, "progs/smoke.mdl") ||
+	//     !strcmp (clmodel->name, "progs/glass1.mdl") ||
+	//     !strcmp (clmodel->name, "progs/glass2.mdl") ||
+	//     !strcmp (clmodel->name, "progs/glass3.mdl") ||
+	//     !strcmp (clmodel->name, "progs/debris.mdl"))
+	// {
+	// 	filter = true;
+	// }
 
 	/* 
 	 * shpuld: note, alphafunc stuff doesn't seem to work correctly with 
@@ -1186,22 +1174,22 @@ void R_DrawAliasModel (entity_t *ent)
 	 * need to figure out why sceGuColor is not enough to give verts alpha
 	 * to pass alpha test. might need to simply just give em a 16bit vert color
 	 */
-	if (!strcmp (clmodel->name, "progs/raptor.mdl") ||
-        !strcmp (clmodel->name, "progs/5_box_s.mdl") ||
-	    !strcmp (clmodel->name, "progs/trex.mdl"))
-	{
-		alphafunc = true;
-	}
+	// if (!strcmp (clmodel->name, "progs/raptor.mdl") ||
+    //     !strcmp (clmodel->name, "progs/5_box_s.mdl") ||
+	//     !strcmp (clmodel->name, "progs/trex.mdl"))
+	// {
+	// 	alphafunc = true;
+	// }
 
-	if (ent == &cl.viewent ||
-	    !strcmp (clmodel->name, "progs/v_sniper.mdl") ||
-	    !strcmp (clmodel->name, "progs/crate.mdl") ||
-	    !strcmp (clmodel->name, "progs/pc.mdl"))
-	{
-		// alphafunc2 = true;
-        if (r_model_brightness.value)
-			fixlight = true;
-	}
+	// if (ent == &cl.viewent ||
+	//     !strcmp (clmodel->name, "progs/v_sniper.mdl") ||
+	//     !strcmp (clmodel->name, "progs/crate.mdl") ||
+	//     !strcmp (clmodel->name, "progs/pc.mdl"))
+	// {
+	// 	// alphafunc2 = true;
+    //     if (r_model_brightness.value)
+	// 		fixlight = true;
+	// }
 
 	if (lightcolor[0] < 16)
 		lightcolor[0] = 16;
@@ -1306,7 +1294,8 @@ void R_DrawAliasModel (entity_t *ent)
 	GL_SetupAliasLight(force_fullbright);
 	sceGuColor(0xffffffff);
 
-   	if (r_interpolate_animation.value)
+	// cypress -- add support for r_nolerp_list from quakespasm (for flames and stuff.)
+   	if (r_interpolate_animation.value && !(ent->model->flags & MOD_NOLERP))
         R_SetupAliasBlendedFrame (ent->frame, paliashdr, ent, ent->angles[0], ent->angles[1]);
     else
         R_SetupAliasFrame (ent->frame, paliashdr, ent->angles[0], ent->angles[1]);

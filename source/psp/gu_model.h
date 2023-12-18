@@ -354,14 +354,21 @@ typedef enum {
 	mod_brush, mod_sprite, mod_alias
 } modtype_t;
 
-#define	EF_ROCKET	1			// leave a trail
-#define	EF_GRENADE	2			// leave a trail
-#define	EF_GIB		4			// leave a trail
-#define	EF_ROTATE	8			// rotate (bonus items)
-#define	EF_TRACER	16			// green split trail
-#define	EF_ZOMGIB	32			// small blood trail
-#define	EF_TRACER2	64			// orange split trail + rotate
-#define	EF_TRACER3	128			// purple trail
+#define	EF_ROCKET		1			// leave a trail
+#define	EF_GRENADE		2			// leave a trail
+#define	EF_GIB			4			// leave a trail
+#define	EF_ROTATE		8			// rotate (bonus items)
+#define	EF_TRACER		16			// green split trail
+#define	EF_ZOMGIB		32			// small blood trail
+#define	EF_TRACER2		64			// orange split trail + rotate
+#define	EF_TRACER3		128			// purple trail
+
+//johnfitz -- extra flags for rendering
+#define MOD_NOLERP		256			// don't lerp when animating
+#define MOD_FULLBRIGHT	512			// render with full light
+#define MOD_ADDITIVE 	1024 		// proquake's enhancements for additive 
+									// blending with lightning, and stuff.
+//johnfitz
 
 typedef struct model_s
 {
@@ -451,5 +458,7 @@ void	Mod_TouchModel (char *name);
 
 mleaf_t *Mod_PointInLeaf (float *p, model_t *model);
 byte	*Mod_LeafPVS (mleaf_t *leaf, model_t *model);
+
+void Mod_SetExtraFlags (model_t *mod);
 
 #endif	// __MODEL__

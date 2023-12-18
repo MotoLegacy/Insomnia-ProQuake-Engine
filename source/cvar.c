@@ -442,7 +442,7 @@ Cvar_RegisterVariable
 Adds a freestanding variable to the variable list.
 ============
 */
-void Cvar_RegisterVariable (cvar_t *variable, void *function)
+void Cvar_RegisterVariable (cvar_t *variable, void (*function)(void))
 {
 	char	*oldstr;
 	cvar_t	*cursor,*prev; //johnfitz -- sorted list insert

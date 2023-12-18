@@ -2064,6 +2064,66 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 	return (void *)pskintype;
 }
 
+static qboolean
+nameInList(const char *list, const char *name)
+{
+	const char *s;
+	char tmp[MAX_QPATH];
+	int i;
+
+	s = list;
+
+	while (*s)
+	{
+		// make a copy until the next comma or end of string
+		i = 0;
+		while (*s && *s != ',')
+		{
+			if (i < MAX_QPATH - 1)
+				tmp[i++] = *s;
+			s++;
+		}
+		tmp[i] = '\0';
+		//compare it to the model name
+		if (!strcmp(name, tmp))
+		{
+			return qtrue;
+		}
+		//search forwards to the next comma or end of string
+		while (*s && *s == ',')
+			s++;
+	}
+	return qfalse;
+}
+
+/*
+=================
+Mod_SetExtraFlags -- johnfitz -- set up extra flags that aren't in the mdl
+=================
+*/
+void Mod_SetExtraFlags (model_t *mod)
+{
+	extern cvar_t r_nolerp_list, r_fullbright_list, r_additive_list;
+
+	if (!mod || mod->type != mod_alias)
+		return;
+
+	mod->flags = 0;
+
+	// nolerp flag
+	if (nameInList(r_nolerp_list.string, mod->name))
+		mod->flags |= MOD_NOLERP;
+
+	// cypress -- added a fullbright list, along with
+	// one for the super weird additive enhancements we have.
+	// this saved TONS of useless strcmps per model draw, lol.
+	if (nameInList(r_fullbright_list.string, mod->name))
+		mod->flags |= MOD_FULLBRIGHT;
+
+	if (nameInList(r_additive_list.string, mod->name))
+		mod->flags |= MOD_ADDITIVE;
+}
+
 /*
 =================
 Mod_LoadAliasModel
@@ -2200,6 +2260,8 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 	mod->radius = RadiusFromBounds (mod->mins, mod->maxs);
 #endif
+
+	Mod_SetExtraFlags (mod); //johnfitz
 
 	// build the draw lists
 	GL_MakeAliasModelDisplayLists (mod, pheader);

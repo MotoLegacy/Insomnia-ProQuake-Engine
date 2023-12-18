@@ -31,6 +31,10 @@ void VLight_ResetAnormTable();
 
 void GL_InitTextureUsage ();
 
+extern cvar_t r_nolerp_list;
+extern cvar_t r_fullbright_list;
+extern cvar_t r_additive_list;
+
 /*
 ==================
 R_InitTextures
@@ -65,6 +69,19 @@ void	R_InitTextures (void)
 			}
 	}
 }
+
+/*
+===============
+R_Model_ExtraFlags_List_f -- johnfitz -- called when r_nolerp_list cvar changes
+===============
+*/
+void R_Model_ExtraFlags_List_f (void)
+{
+	int i;
+	for (i=0; i < MAX_MODELS; i++)
+		Mod_SetExtraFlags (cl.model_precache[i]);
+}
+
 /*
 byte	dottexture[8][8] =
 {
@@ -251,6 +268,10 @@ void R_Init (void)
     Cvar_RegisterVariable (&r_model_contrast, NULL);
     Cvar_RegisterVariable (&r_model_brightness, NULL);
 	Cvar_RegisterVariable (&r_skybox, NULL);
+
+	Cvar_RegisterVariable (&r_nolerp_list, R_Model_ExtraFlags_List_f);
+	Cvar_RegisterVariable (&r_fullbright_list, R_Model_ExtraFlags_List_f);
+	Cvar_RegisterVariable (&r_additive_list, R_Model_ExtraFlags_List_f);
 
 	Cvar_RegisterVariable (&gl_keeptjunctions, NULL);
 
