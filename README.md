@@ -1,4 +1,4 @@
-# Interstice ProQuake v5.10
+# Interstice ProQuake v5.20
 
 This repository contains _Interstice_, an interation upon [_Insomnia_](https://github.com/darkduke606/Insomnia-ProQuake-Engine), part of the bloodline of ProQuake sourceports for the PlayStation Portable handheld.
 
@@ -38,9 +38,13 @@ Build with `make`.
 
 ## CD Audio Support
 
-Interstice uses a hardware accelerated `.mp3` decoder for CD Audio support, this means other formats like `.flac` and `.ogg` are unsupported. It uses the widely-adopted standard for path and file name, that standard being `<GAMEDIR>/music/track01.mp3`. It will fall back to the `id1` directory to try and load a track there if one is not present in the loaded game directory. It is recommended to lower the rate of your music tracks to 22kHz, but the standard 44.1kHz sourced directly from Quake CDs will play without issue. Interstice fixes the bug with Mission Pack 1's `HIPDEMO.DEM` referencing a track `98` instead of `02`.
+Interstice uses a hardware accelerated `.mp3` decoder for CD Audio support, this means other formats like `.flac` and `.ogg` are unsupported. It uses the widely-adopted standard for path and file name, that standard being `<GAMEDIR>/music/track01.mp3`. It will fall back to the `id1` directory to try and load a track there if one is not present in the loaded game directory. It is recommended to lower the rate of your music tracks to 190Kbps (or lower), but the standard music files sourced directly from Quake CDs will play without issue. Interstice fixes the bug with Mission Pack 1's `HIPDEMO.DEM` referencing a track `98` instead of `02`.
 
 ## Changelog
+
+### 5.20
+* Several performance and memory optimizations from @shpuld.
+ - Note that changes made here do not impact mod compatibility.
 
 ### 5.10
 * `sv_defaultmap` cvar can now be used to determine what map to start when beginning a new game (useful for mods).

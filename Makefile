@@ -22,7 +22,7 @@ endif
 PSPLIBSDIR		= $(PSPSDK)/..
 
 # Project specific variables.
-VERSION		= 5.10 UNIFIED
+VERSION		= 5.20 UNIFIED
 SRC_DIR		= source
 OBJ_DIR		= build
 TARGET		= $(OBJ_DIR)/Quake

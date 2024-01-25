@@ -474,7 +474,7 @@ int Random_Int (int max_int)
 
 char* GenerateSplashText(void)
 {
-	int num = Random_Int(8);
+	int num = Random_Int(10);
 
 	switch(num) {
 		case 1: return "DO NOT PET THE SHAMBLER"; break;
@@ -485,6 +485,8 @@ char* GenerateSplashText(void)
 		case 6: return "THE SHAMBLER HAS NO FUR"; break;
 		case 7: return "50\% compatibility on a good day!"; break;
 		case 8: return "technically i'm saying anything"; break;
+		case 9: return "new as of 2024!"; break;
+		case 10: return "yeah! quake his ass!"; break;
 		default: return "GPLv2 since '99"; break;
 	}
 }
