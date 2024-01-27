@@ -455,6 +455,10 @@ void M_Main_Draw (void)
     	M_DrawTransPic (54, 32 + m_main_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
     }
 
+	if (IS_ENHANCED) {
+		M_DrawPic ( (320-enhanced_m_complete_de->width)/2, 4, enhanced_m_complete_de);
+	}
+
 		M_Print (112, 0, va("Version %4.2f", (float) PROQUAKE_SERIES_VERSION));
 }
 

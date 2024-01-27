@@ -42,6 +42,8 @@ else
 BUILD_PRX		= 1
 endif
 
+BUILD_PRX 		= 0
+
 # Object files used regardless of video back end.
 COMMON_OBJS = \
 	$(OBJ_DIR)/psp/battery.o \
@@ -72,6 +74,8 @@ COMMON_OBJS = \
 	$(OBJ_DIR)/crc.o \
 	$(OBJ_DIR)/cvar.o \
 	$(OBJ_DIR)/compat.o \
+	$(OBJ_DIR)/image_to_qpalette.o \
+	$(OBJ_DIR)/qex.o \
 	$(OBJ_DIR)/host.o \
 	$(OBJ_DIR)/host_cmd.o \
 	$(OBJ_DIR)/keys.o \

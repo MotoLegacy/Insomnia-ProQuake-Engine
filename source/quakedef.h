@@ -276,6 +276,7 @@ typedef struct
 #include "psp/gu_psp.h"
 
 #include "compat.h"
+#include "qex.h"
 #include "location.h"	// JPG - for %l formatting speficier
 // PSP should support IPLOG but disable by default; uses a lot of memory
 #include "iplog.h"		// JPG 1.05 - ip address logging

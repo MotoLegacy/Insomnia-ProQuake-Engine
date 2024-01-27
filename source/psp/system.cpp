@@ -9,7 +9,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 
 See the GNU General Public License for more details.
 
@@ -18,6 +18,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+//
+// 12/5/2020 - Use ADQuake's system.cpp and its move from std to sceIO for file I/O
+// because std::fclose() is bunked -- cypress
+// creds to st1x51
+//
 
 #define ENABLE_PRINTF 0
 
@@ -68,12 +74,14 @@ namespace quake
 			// Set on open.
 			char	name[MAX_OSPATH + 1];
 			bool	write;
-
+#if 0
 			// Set on open, suspend, restore.
 			FILE*	handle;
-
+#else
+            SceUID handle;
+#endif
 			// Set on suspend.
-			long	offset;
+			SceOff	offset;
 		};
 
 		static bool					debugScreenInitialized	= false;
@@ -97,14 +105,21 @@ namespace quake
 				if (file.name[0])
 				{
 					// Save the offset;
+#if 0
 					file.offset = ftell(file.handle);
-
+#else
+					file.offset = sceIoLseek(file.handle, 0, SEEK_CUR);
+#endif
 					// Close the file.
+#if 0
 					fclose(file.handle);
+#else
+                    sceIoClose(file.handle);
+#endif
 					file.handle = 0;
 				}
 			}
-
+			
 			Con_Printf("Filesystem suspended\n");
 		}
 
@@ -119,7 +134,12 @@ namespace quake
 				if (file.name[0])
 				{
 					// Reopen the file. This can repeatedly fail, so we keep trying.
+#if 0
 					const char* mode = file.write ? "ab" : "rb";
+#else
+					int mode = file.write ? PSP_O_APPEND : PSP_O_RDONLY;
+#endif
+#if 0
 					do
 					{
 						file.handle = fopen(file.name, mode);
@@ -131,19 +151,21 @@ namespace quake
 					{
 						throw std::runtime_error("Couldn't seek in file");
 					}
-				}
-			}
+#else
+					file.handle = sceIoOpen(file.name, mode, 0777);
+				    if(file.handle < 0)
+					{
+					   throw std::runtime_error("Couldn't open file");
+					}
 
-            Con_Printf("CD Audio Initialized\n");
-            if(IS_KUROK)
-            {
-                Cvar_SetStringByRef (&bgmtype, "cd");
-                CDAudio_Update();
-            }
-			else
-			{
-			    Cvar_SetStringByRef (&bgmtype, "cd");
-                CDAudio_Update();
+					// Restore the offset;
+					if (sceIoLseek(file.handle, file.offset, SEEK_SET) != 0)
+					{
+						throw std::runtime_error("Couldn't seek in file");
+					}
+					
+#endif
+				}
 			}
 			
 //			CDAudio_Resume();
@@ -169,14 +191,20 @@ int Sys_FileOpenRead (char *path, int *hndl)
 		}
 
 		// Open the file.
+#if 0
 		file.handle = fopen(path, "rb");
 		if (!file.handle)
+#else
+		file.handle = sceIoOpen(path, PSP_O_RDONLY, 0777);
+		if (file.handle < 0)
+#endif
 		{
 			*hndl = -1;
 			return -1;
 		}
 
 		// Get the length.
+#if 0
 		if (fseek(file.handle, 0, SEEK_END) != 0)
 		{
 			Sys_Error("fseek failed");
@@ -186,7 +214,11 @@ int Sys_FileOpenRead (char *path, int *hndl)
 		{
 			Sys_Error("fseek failed");
 		}
-
+#else
+        SceOff pos = sceIoLseek(file.handle, 0, SEEK_CUR);
+        const long length = sceIoLseek(file.handle, 0, SEEK_END);
+        sceIoLseek(file.handle, pos, SEEK_SET);
+#endif
 		// The file is now in use!
 		strncpy(file.name, path, MAX_OSPATH);
 		file.write = false;
@@ -213,9 +245,15 @@ int Sys_FileOpenWrite (char *path)
 		}
 
 		// Open the file.
+#if 0
 		file.handle = fopen(path, "wb");
 		if (!file.handle)
+#else
+		file.handle = sceIoOpen(path, PSP_O_WRONLY | PSP_O_CREAT | PSP_O_TRUNC, 0777);
+		if (file.handle < 0)
+#endif
 		{
+			Con_Printf("\nWOMP WOMP\n");
 			return -1;
 		}
 
@@ -235,7 +273,11 @@ void Sys_FileClose (int handle)
 {
 	// Close the file.
 	file& file = files[handle];
+#if 0
 	fclose(file.handle);
+#else
+    sceIoClose(file.handle);
+#endif
 	file.handle = 0;
 	file.name[0] = 0;
 }
@@ -243,28 +285,34 @@ void Sys_FileClose (int handle)
 void Sys_FileSeek (int handle, int position)
 {
 	file& file = files[handle];
-	if (fseek(file.handle, position, SEEK_SET) != 0)
-	{
+#if 0
+    if (fseek(file.handle, position, SEEK_SET) != 0)
+    {
 		Sys_Error("fseek failed");
 	}
+#else
+    sceIoLseek(file.handle, position, SEEK_SET);
+#endif
 }
 
 int Sys_FileRead (int handle, void *dest, int count)
 {
 	file& file = files[handle];
+#if 0
 	return fread(dest, 1, count, file.handle);
-}
-
-int Sys_FileFread (void *dest, int start, int count, int handle)
-{
-	file& file = files[handle];
-	return fread(dest, start, count, file.handle);
+#else
+    return sceIoRead(file.handle, dest, count);
+#endif
 }
 
 int Sys_FileWrite (int handle, void *data, int count)
 {
 	file& file = files[handle];
+#if 0
 	return fwrite(data, 1, count, file.handle);
+#else
+	return sceIoWrite(file.handle, data, count);
+#endif
 }
 
 int	Sys_FileTime (char *path)

@@ -1159,7 +1159,7 @@ void Host_Init (quakeparms_t *parms)
 
 	}
 
-	//LOC_Init (); // for 2021 rerelease support.
+	QEX_Init(); // for 2021 rerelease support.
 
 	// SUPERHOT Quake's many cvars
 	if (IS_SUPERHOT)

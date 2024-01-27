@@ -151,6 +151,8 @@ for a few moments
 */
 void SCR_CenterPrint (char *str)
 {
+	if (str[0] == '$')
+		str = "LOCALIZED STRING TODO";
 	strncpy (scr_centerstring, str, sizeof(scr_centerstring)-1);
 	scr_centertime_off = scr_centertime.value;
 	scr_centertime_start = cl.time;
