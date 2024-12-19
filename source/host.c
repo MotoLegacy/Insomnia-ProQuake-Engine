@@ -26,6 +26,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #endif
 #ifdef PSP
 #include "psp/sysmem_module.h"
+#include <psppower.h>
+#include <pspge.h>
+#include <pspsysmem.h>
 #endif
 
 /*
@@ -1059,7 +1062,7 @@ void Host_Init (quakeparms_t *parms)
 
 	int currentCPU = scePowerGetCpuClockFrequency();
 	int currentVRAM = sceGeEdramGetSize();
-    int currentVRAMADD = sceGeEdramGetAddr();
+	int currentVRAMADD = (int) sceGeEdramGetAddr();
 	int currentRAMAVAIL = sceKernelTotalFreeMemSize();
 
 	switch(psp_system_model) {
