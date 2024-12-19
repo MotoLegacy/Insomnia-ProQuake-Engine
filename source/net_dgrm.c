@@ -23,7 +23,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "net_dgrm.h"
 
 // This is enables a simple IP banning mechanism
-#ifndef PSP_NETWORKING_CODE
+#ifdef PSP_NETWORKING_CODE
+#include <pspthreadman.h>
+#else
 #define BAN_TEST
 #endif
 

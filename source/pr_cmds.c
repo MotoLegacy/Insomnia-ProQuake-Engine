@@ -313,18 +313,6 @@ void PF_sprint (void)
 	MSG_WriteString (&client->message, s );
 }
 
-void PF_65(void)
-{
-	if (IS_SUPERHOT)
-		PF_centerprint();
-}
-
-void PF_66(void)
-{
-	if (IS_SUPERHOT)
-		PF_centerprint();
-}
-
 /*
 =================
 PF_centerprint
@@ -355,6 +343,17 @@ void PF_centerprint (void)
 	MSG_WriteString (&client->message, s );
 }
 
+void PF_65(void)
+{
+	if (IS_SUPERHOT)
+		PF_centerprint();
+}
+
+void PF_66(void)
+{
+	if (IS_SUPERHOT)
+		PF_centerprint();
+}
 
 /*
 =================
